@@ -1,0 +1,358 @@
+/* 
+Theme Name:      Hello Elementor child
+Theme URI:       http://childtheme-generator.com/
+Description:     
+Author:          Freequiz AI
+Author URI:      
+Template:        hello-elementor
+Version:         1.0.0
+Text Domain:     hello-child
+*/
+
+
+/*
+    Add your custom styles here
+*/
+.programmable-search .gsc-control-cse,.programmable-search .gsc-input,.gsib_a,.gsc-search-button {
+    padding: 0!important;
+    margin: 0;
+}
+
+.gsc-search-button-v2 svg {
+    fill: #333!important;
+    height: 25px;
+    width: 25px
+}
+
+.gsc-search-button {
+    position: absolute;
+    right: 2%;
+    top: 15%
+}
+
+.gsc-search-button-v2 {
+    background-color: transparent!important;
+    border: none!important
+}
+
+.programmable-search {
+    flex: 0 0 75%;
+    max-height: 42px
+}
+
+.programmable-search table tbody>tr:nth-child(odd)>td,.programmable-search table tbody>tr:nth-child(odd)>th {
+    background-color: transparent!important
+}
+
+.gsc-url-top,.gsc-table-result,.gsc-above-wrapper-area,.gsib_b {
+    display: none!important
+}
+
+.gsc-control-wrapper-cse {
+    position: relative
+}
+
+.gsc-results-wrapper-visible {
+    position: absolute;
+    width: 100%;
+    z-index: 9
+}
+
+.gsc-results {
+    background: #fff;
+    box-shadow: 0 0 4px 0 rgb(0 0 0 / .2);
+    padding: 5px
+}
+
+.gsc-webResult.gsc-result,.gsc-results .gsc-imageResult {
+    padding: 3px!important
+}
+
+.programmable-search tr,.programmable-search td,.programmable-search table,.gsc-input-box {
+    border: none!important;
+    padding: 0!important;
+}
+
+#gsc-i-id1 {
+    border: 1px solid #333!important;
+    border-radius: 50px!important;
+    padding: 8px!important;
+    background-position: center!important
+}
+
+.menu-toggle svg {
+    height: 30px;
+    padding: 0;
+    cursor: pointer;
+    fill: #333
+}
+
+.menu-toggle svg:hover {
+    fill: #e55b3a
+}
+
+.menu-toggle:hover,.menu-toggle:focus,.dialog-close-button:hover,.dialog-close-button:focus {
+    background: none
+}
+
+.menu-toggle {
+    border: 2px solid #333;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px
+}
+
+.offcanvas {
+    position: fixed;
+    top: 0;
+    left: -20%;
+    width: 20%;
+    height: 100%;
+    background: #222;
+    color: #fff;
+    transition: left 0.3s ease;
+    padding: 20px;
+    z-index: 1000;
+    overflow-y: auto;
+    align-items: center;
+    display: flex;
+    font-size: 20px
+}
+
+.offcanvas.active {
+    left: 0
+}
+
+.offcanvas ul {
+    list-style: none;
+    padding: 0;
+    margin: 0
+}
+
+.offcanvas li {
+    border-bottom: 1px solid #444;
+    width: 100%
+}
+
+.offcanvas li:after {
+    content: none;
+    display: none!important
+}
+
+.submenu-toggle {
+    display: flex;
+    align-items: center;
+    font-size: 25px;
+    cursor: pointer
+}
+
+.offcanvas a {
+    display: block;
+    padding: .75rem 1rem;
+    color: #fff;
+    text-decoration: none;
+    width: 100%
+}
+
+.offcanvas a:hover,.offcanvas li:hover {
+    background: #333;
+    color: #fff
+}
+
+.sub-menu {
+    display: none;
+    background: #2d2d2d
+}
+
+.offcanvas .site-navigation ul.menu li:not(.open):hover>ul,.offcanvas .site-navigation ul.menu li.menu-item-has-children:not(.open):focus-within>ul {
+    display: none
+}
+
+.offcanvas .site-navigation {
+    width: 100%
+}
+
+.sub-menu a {
+    padding-left: 2rem
+}
+
+.menu-item-has-children.open>.sub-menu {
+    display: block;
+    width: 100%;
+    background: #333;
+    padding-left: 20px
+}
+
+.dialog-close-button {
+    position: absolute;
+    right: 0;
+    top: 15px;
+    border: none
+}
+
+.dialog-close-button svg {
+    fill: #fff;
+    height: 40px;
+    width: 40px
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgb(0 0 0 / 75%);
+    display: none;
+    z-index: 999
+}
+
+.overlay.active {
+    display: block
+}
+
+.site-footer a {
+    color: gray
+}
+
+.site-footer {
+    background: #333;
+    color: #fff
+}
+
+.quizzes-columns a {
+    color: #000;
+    text-decoration: none!important;
+    font-weight: 600
+}
+
+.has-4-columns {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 1rem
+}
+
+.site-navigation ul.menu {
+    flex-direction: column;
+    width: 100%
+}
+
+.site-navigation ul.menu li {
+    display: block
+}
+
+.site-navigation ul.menu li a {
+    padding: 15px
+}
+
+.text-center {
+    text-align: center
+}
+
+.site-branding img {
+    max-width: 40px
+}
+
+#site-header {
+    align-items: center
+}
+
+.m-b-0 {
+    margin-bottom: 0
+}
+
+.home-choose-category {
+    padding: 50px 5%
+}
+
+.page-content .choose-quiz-category a {
+    color: inherit;
+    text-decoration: none
+}
+
+.choose-quiz-category {
+    column-gap: 20px;
+    row-gap: 20px
+}
+
+.choose-quiz-category div {
+    line-height: 1.2;
+    font-size: 70px;
+    font-weight: 600;
+    border-radius: 20px;
+    text-align: center;
+    padding: 10% 0
+}
+
+.pad-t-20px {
+    padding-top: 20px
+}
+
+.choose-quiz-category div p {
+    -webkit-transition: all 100ms ease-in-out;
+    -moz-transition: all 100ms ease-in-out;
+    -ms-transition: all 100ms ease-in-out;
+    -o-transition: all 100ms ease-in-out;
+    transition: all 100ms ease-in-out
+}
+
+.choose-quiz-category div p:hover {
+    transform: rotate(5deg);
+    -webkit-transition: all 300ms ease-in-out;
+    -moz-transition: all 300ms ease-in-out;
+    -ms-transition: all 300ms ease-in-out;
+    -o-transition: all 300ms ease-in-out;
+    transition: all 300ms ease-in-out
+}
+
+.choose-quiz-category div:first-child {
+    background: #ff914c
+}
+
+.choose-quiz-category div:last-child {
+    background: #f8cd5c
+}
+
+@media(min-width: 768px) {
+    .justify-content-end-desktop {
+        justify-content:end
+    }
+}
+
+@media(max-width: 767px) {
+    .gsc-search-button {
+    position: absolute;
+    right: 5%;
+    top: 30%;
+}
+    .programmable-search {
+        flex:0 0 65%;
+        /* position: relative; */
+    }
+
+    .offcanvas.active {
+        width: 100%
+    }
+
+    .tax-quizzes h1.entry-title {
+        padding: 0
+    }
+
+    .has-4-columns {
+        grid-template-columns: 1fr
+    }
+
+    .remove-on-mobile {
+        display: none
+    }
+
+    .choose-quiz-category div,.home-choose-category h1 {
+        font-size: 30px
+    }
+
+    .choose-quiz-category div {
+        border-radius: 50px;
+        padding: 20px
+    }
+}

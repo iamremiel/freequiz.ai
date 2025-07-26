@@ -1,0 +1,12 @@
+*
+!.gitignore
+!themes/
+!themes/hello-child/
+!themes/hello-child/**
+!plugins/
+!plugins/ajax-quiz-search/
+!plugins/ajax-quiz-search/**
+!plugins/quiz-category-search/
+!plugins/quiz-category-search/**
+uploads/
+cache/
