@@ -615,18 +615,19 @@ function wpforms_hubspot_wrapper_shortcode($atts) {
     $atts = shortcode_atts([
         'wpform_id'   => '',
         'portal_id'   => '',
-        'hubspot_id'  => '',
+        'hubspot_form_id'  => '',
+        'class' => '',
     ], $atts, 'hubspot_form');
 
     if (empty($atts['wpform_id'])) return '<p><strong>Missing wpform_id</strong></p>';
     if (empty($atts['portal_id'])) return '<p><strong>Missing portal_id</strong></p>';
-    if (empty($atts['hubspot_id'])) return '<p><strong>Missing hubspot_id</strong></p>';
+    if (empty($atts['hubspot_form_id'])) return '<p><strong>Missing hubspot_id</strong></p>';
 
     ob_start();
     ?>
-    <div class="hubspot-forwarder"
+    <div class="hubspot-forwarder <?php echo $atts['class'];?>"
          data-portal-id="<?php echo esc_attr($atts['portal_id']); ?>"
-         data-form-id="<?php echo esc_attr($atts['hubspot_id']); ?>">
+         data-form-id="<?php echo esc_attr($atts['hubspot_form_id']); ?>">
         <?php echo do_shortcode('[wpforms id="' . esc_attr($atts['wpform_id']) . '"]'); ?>
     </div>
     <?php
@@ -637,5 +638,125 @@ add_shortcode('hubspot_form', 'wpforms_hubspot_wrapper_shortcode');
 [hubspot_form wpform_id="1234" portal_id="243399050" hubspot_form_id="99c2a641-46c6-4e4c-93ec-af799fe08461"]
 
 */
+
+//map the wpforms fields to hubspot field
+
+
+// Hook into WPForms form submission
+add_action('wpforms_process_complete', 'send_wpforms_to_hubspot', 10, 4);
+function send_wpforms_to_hubspot($fields, $entry, $form_data, $entry_id) {
+
+    // Define the Webhook URL (Zapier)
+    $webhook_url = 'https://hooks.zapier.com/hooks/catch/15141413/uupds4r/';
+
+    // Initialize variables
+    $firstname = '';
+    $lastname = '';
+    $email = '';
+    $send_quiz_results = '';
+    $subscribe_to_newletters = '';
+    $quiz_results =  isset($fields[14]['value']) ? $fields[14]['value'] : null;
+
+    // Match fields based on field labels (e.g., 'First Name', 'Email', etc.)
+        foreach ($fields as $field) {
+            if (isset($field['name'])) {
+                switch (strtolower($field['name'])) {
+                    case 'name':
+                        $firstname = $field['first'] ?? '';
+                        $lastname = $field['last'] ?? '';
+                        break;
+                    case 'email':
+                        $email = $field['value'] ?? '';
+                        break;
+                    case 'send my results':
+                        $send_quiz_results = $field['value'] ?? '';
+                        break;
+                    case 'subscribe':
+                        $subscribe_to_newletters = $field['value'] ?? '';
+                        break;
+                }
+            } 
+        }
+
+   
+
+
+    // Build context
+    $context = [
+        'pageUri'  => $_SERVER['HTTP_REFERER'] ?? get_permalink() ?: '',
+        'pageName' => get_the_title() ?: 'WPForms Submission'
+    ];
+
+    // Add HubSpot tracking cookie if present
+    if (!empty($_COOKIE['hubspotutk'])) {
+        $context['hutk'] = $_COOKIE['hubspotutk'];
+    }
+
+    // Build payload for hubspot
+    $hub_payload = [
+        'fields' => [
+            ['name' => 'email', 'value' => $email],
+            ['name' => 'firstname', 'value' => $firstname],
+            ['name' => 'lastname', 'value' => $lastname],
+            ['name' => 'send_my_results', 'value' => $send_quiz_results],
+            ['name' => 'ip_address', 'value' => $_SERVER['REMOTE_ADDR'] ?? ''],
+            ['name' => 'user_agent', 'value' => $_SERVER['HTTP_USER_AGENT'] ?? ''],
+        ],
+        'context' => $context
+    ];
+
+if (empty($quiz_results)) {
+    error_log('Quiz results is empty!');
+}
+
+    // Build payload for hubspot
+    $zap_payload = array_merge([
+        'email'            => $email,
+        'firstname'        => $firstname,
+        'lastname'         => $lastname,
+        'send_my_results'  => $send_quiz_results,
+        'subscribe_to_newsletters'  => $subscribe_to_newletters,
+        'quiz_results_html' => $quiz_results,
+        'source' => 'wpforms',
+        
+    ], $context);
+
+
+    // HubSpot Form Details
+    $hubspot_portal_id = '243399050'; // Replace with your actual portal ID
+    $hubspot_form_guid = '99c2a641-46c6-4e4c-93ec-af799fe08461'; // Replace with your actual form GUID
+
+    $url = "https://api.hsforms.com/submissions/v3/integration/submit/{$hubspot_portal_id}/{$hubspot_form_guid}";
+
+    // Send to HubSpot
+    $hubspot_response = wp_remote_post($url, [
+        'headers' => ['Content-Type' => 'application/json'],
+        'body'    => wp_json_encode($hub_payload),
+        'timeout' => 10
+    ]);
+
+    // Send to Zapier
+    $zapier_response = wp_remote_post($webhook_url, [
+        'headers' => ['Content-Type' => 'application/json'],
+        'body'    => wp_json_encode($zap_payload),
+        'timeout' => 10
+    ]);
+
+    // Error logging (optional)
+    if (is_wp_error($hubspot_response)) {
+        error_log('HubSpot API Error: ' . $hubspot_response->get_error_message());
+    } elseif (wp_remote_retrieve_response_code($hubspot_response) !== 200) {
+        error_log('HubSpot API Response: ' . wp_remote_retrieve_body($hubspot_response));
+    }
+
+    if (is_wp_error($zapier_response)) {
+        error_log('Zapier API Error: ' . $zapier_response->get_error_message());
+    } elseif (wp_remote_retrieve_response_code($zapier_response) !== 200) {
+        error_log('Zapier API Response: ' . wp_remote_retrieve_body($zapier_response));
+    }
+}
+
+
+
 
  ?>
