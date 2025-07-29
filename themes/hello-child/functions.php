@@ -647,7 +647,7 @@ add_action('wpforms_process_complete', 'send_wpforms_to_hubspot', 10, 4);
 function send_wpforms_to_hubspot($fields, $entry, $form_data, $entry_id) {
 
     // Define the Webhook URL (Zapier)
-    $webhook_url = 'https://hooks.zapier.com/hooks/catch/15141413/uupds4r/';
+    $webhook_url = defined('ZAPIER_WEBHOOK_URL') ? ZAPIER_WEBHOOK_URL : '';
 
     // Initialize variables
     $firstname = '';
