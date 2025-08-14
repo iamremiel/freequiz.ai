@@ -13,6 +13,10 @@ Text Domain:     hello-child
 /*
     Add your custom styles here
 */
+.hidden{
+visibility: hidden;
+height: 0;
+}
 .programmable-search .gsc-control-cse,.programmable-search .gsc-input,.gsib_a,.gsc-search-button {
     padding: 0!important;
     margin: 0;
@@ -172,7 +176,7 @@ div.wpforms-container-full button[type=submit]:hover{
     background: #2d2d2d
 }
 
-.offcanvas .site-navigation ul.menu li:not(.open):hover>ul,.offcanvas .site-navigation ul.menu li.menu-item-has-children:not(.open):focus-within>ul, .hubspot-forwarder.outside-quiz {
+.offcanvas .site-navigation ul.menu li:not(.open):hover>ul,.offcanvas .site-navigation ul.menu li.menu-item-has-children:not(.open):focus-within>ul, .outside-quiz {
     display: none;
     height: 1px;
     position: relative;

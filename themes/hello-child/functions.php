@@ -380,6 +380,7 @@ function auto_output_qsm_quiz_schema() {
     // Quiz title and fields
     $get_about_text = get_field('about', $post_id);
     $get_description_text = get_field('description', $post_id);
+    $author_id = $post->post_author;
 
     $quiz_schema = [
         "@context" => "https://schema.org",
@@ -388,12 +389,23 @@ function auto_output_qsm_quiz_schema() {
         "description" => esc_html($get_description_text),
         "url" => get_permalink($post_id),
         "about" => esc_html($get_about_text),
+        "datePublished" => get_the_date(DATE_ATOM, $post_id),
+        "author" => [
+            "@type" => "Person",
+            "name" => get_the_author_meta('display_name', $author_id),
+            "url" => get_author_posts_url($author_id),
+            "image" => get_avatar_url($author_id),
+            "affiliation" => [
+                "@type" => "Organization",
+                "name" => "FreeQuiz.ai"
+            ]
+        ],
         "interactionStatistic" => [
             "@type" => "InteractionCounter",
             "interactionType" => "https://schema.org/AnswerAction",
             "userInteractionCount" => get_qsm_overall_attempts($quiz_id),
         ],
-        "mainEntity" => []
+        "hasPart" => []
     ];
 
     // Fetch questions
@@ -403,7 +415,7 @@ function auto_output_qsm_quiz_schema() {
          FROM {$questions_table} 
          WHERE quiz_id = %d AND deleted = 0 
          ORDER BY question_order ASC 
-         LIMIT 5",
+         LIMIT 3",
         $quiz_id
     ));
 
@@ -470,24 +482,103 @@ function auto_output_qsm_quiz_schema() {
         $question_schema = [
             "@type" => "Question",
             "name" => wp_strip_all_tags($question_text),
-            "acceptedAnswer" => [
-                "@type" => "Answer",
-                "text" => !empty($correct_answers) ? implode(', ', $correct_answers) : $answers[0]['answer']
-            ]
         ];
 
-        if (!empty($incorrect_answers) && $grading_system == 0) {
-            $question_schema['suggestedAnswer'] = array_map(function($a) {
-                return ["@type" => "Answer", "text" => $a];
-            }, $incorrect_answers);
-        }
+// Determine if there are multiple correct answers
+if (!empty($incorrect_answers) && $grading_system == 0) {
+    // Multiple correct answers supported (e.g., checkbox quiz)
+    if (count($correct_answers) > 1) {
+        // Multiple acceptedAnswer entries
+        $question_schema['acceptedAnswer'] = array_map(function($a) {
+            return ["@type" => "Answer", "text" => $a];
+        }, $correct_answers);
+    } else {
+        // Only one correct answer
+        $question_schema['acceptedAnswer'] = [
+            "@type" => "Answer",
+            "text" => !empty($correct_answers) ? $correct_answers[0] : $answers[0]['answer']
+        ];
+    }
 
-        $quiz_schema["mainEntity"][] = $question_schema;
+    // Add suggestedAnswer (incorrect ones)
+    $question_schema['suggestedAnswer'] = array_map(function($a) {
+        return ["@type" => "Answer", "text" => $a];
+    }, $incorrect_answers);
+
+} else {
+    // No grading or can't determine correct/incorrect – show all as accepted
+    $question_schema['acceptedAnswer'] = array_map(function($a) {
+        return ["@type" => "Answer", "text" => $a['answer']];
+    }, $answers);
+
+    unset($question_schema['suggestedAnswer']);
+}
+
+
+        $quiz_schema["hasPart"][] = $question_schema;
     }
 
     echo '<script type="application/ld+json">' . wp_json_encode($quiz_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . '</script>';
 }
 add_action('wp_head', 'auto_output_qsm_quiz_schema');
+
+function qsm_preview_questions_shortcode($atts) {
+    if (!is_singular('quiz')) {
+        return '';
+    }
+
+    global $post, $wpdb;
+
+    $quiz_id = get_qsm_quiz_id_from_content($post->ID);
+    if (!$quiz_id) return '<!-- No quiz found -->';
+
+    $questions_table = $wpdb->prefix . 'mlw_questions';
+
+    $questions = $wpdb->get_results($wpdb->prepare(
+        "SELECT question_id, question_name, answer_array 
+         FROM {$questions_table} 
+         WHERE quiz_id = %d AND deleted = 0 
+         ORDER BY question_order ASC 
+         LIMIT 3", // Get only 3
+        $quiz_id
+    ));
+
+    if (empty($questions)) return '<!-- No questions -->';
+
+    $output = '<div class="qsm-preview-questions">';
+
+
+    foreach ($questions as $question) {
+         $qsm_question = $wpdb->get_var($wpdb->prepare(
+            "SELECT question_settings FROM {$questions_table} WHERE question_id = %d",
+            $question->question_id
+        ));
+        $question_name = maybe_unserialize($qsm_question);
+
+        $question_text = !empty($question->question_name)
+            ? $question->question_name
+            : $question_name['question_title'];
+
+        $answers_raw = maybe_unserialize($question->answer_array);
+
+        $answers = '';
+        if (!empty($answers_raw)) {
+            foreach ($answers_raw as $a) {
+                $answer_text = esc_html($a[0]);
+                $is_correct = !empty($a[2]) ? ' <strong>(Correct)</strong>' : '';
+                $answers .= "<li>{$answer_text}</li>";
+            }
+        }
+
+        $output .= "<h3>" . esc_html($question_text) . "</h3><ol type='A'>{$answers}</Ol>";
+    }
+
+    $output .= '</div>';
+
+    return $output;
+}
+add_shortcode('qsm_preview_questions', 'qsm_preview_questions_shortcode');
+
 
 
 function show_all_post_meta_shortcode($atts) {
@@ -643,7 +734,7 @@ add_shortcode('hubspot_form', 'wpforms_hubspot_wrapper_shortcode');
 
 
 // Hook into WPForms form submission
-add_action('wpforms_process_complete', 'send_wpforms_to_hubspot', 10, 4);
+//add_action('wpforms_process_complete', 'send_wpforms_to_hubspot', 10, 4);
 function send_wpforms_to_hubspot($fields, $entry, $form_data, $entry_id) {
 
     // Define the Webhook URL (Zapier)
@@ -757,6 +848,15 @@ if (empty($quiz_results)) {
 }
 
 
-
+//load wpforms assets to quiz page
+function force_enqueue_wpforms_assets() {
+    if ( is_singular('quiz') ) {
+        // Enqueue the form directly to trigger asset loading
+        echo "<div class='outside-quiz'>";
+        echo do_shortcode('[wpforms id="23" title="false"]');
+        echo "</div>";
+}
+}
+add_action('wp_footer', 'force_enqueue_wpforms_assets');
 
  ?>
